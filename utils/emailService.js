@@ -31,7 +31,14 @@ const sendEmail = (to,cc, subject, html) => {
     html,
   };
 
-  return transporter.sendMail(mailOptions);
+  return transporter.sendMail(mailOptions)
+  .then(info => {
+    console.log("Email sent: " + info.response);
+  })
+  .catch(error => {
+    console.error("Error sending email:", error);
+    throw error;
+  });
 };
 
 module.exports = sendEmail;
