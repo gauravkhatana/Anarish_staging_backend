@@ -22,7 +22,6 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = (to,cc, subject, html) => {
-    console.log("email send called")
   const mailOptions = { 
     from: { name: "Anarish Innovations", address: process.env.EMAIL_USER },
     to,
@@ -30,15 +29,20 @@ const sendEmail = (to,cc, subject, html) => {
     subject,
     html,
   };
-
-  return transporter.sendMail(mailOptions)
-  .then(info => {
-    console.log("Email sent: " + info.response);
-  })
-  .catch(error => {
-    console.error("Error sending email:", error);
-    throw error;
-  });
+  console.log("email send called");
+  try {
+    transporter.sendMail(mailOptions);
+  } catch (err) {
+    console.error("Error sending email:", err);
+  }
+  // return transporter.sendMail(mailOptions)
+  // .then(info => {
+  //   console.log("Email sent: " + info.response);
+  // })
+  // .catch(error => {
+  //   console.error("Error sending email:", error);
+  //   throw error;
+  // });
 };
 
 module.exports = sendEmail;
