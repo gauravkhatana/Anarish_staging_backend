@@ -134,7 +134,7 @@ exports.saveUser = async (req, res) => {
     // Send the second email to anarish
     try {
       await sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date);
-      console.log(`Email sent to Anarish: kumartech0102@gmail.com`);
+      console.log(`Email sent to Anarish: maheshwari.charu@gmail.com`);
     } catch (error) {
       console.error("Error sending email to Anarish:", error);
     }  
@@ -160,7 +160,7 @@ async function sendEmailToRequester(email, userName) {
 
 // Function to send email to Anarish
 async function sendEmailToAnarish(email, userName, userPhone, projectRequirements, date) {
-  const anairshEmail = "kumartech0102@gmail.com";  
+  const anairshEmail = "maheshwari.charu@gmail.com";  
   const subject = "New Query from Website";
   const emailBody = `
     Following user has tried to contact Anarish on ${date}: <br/><br/>

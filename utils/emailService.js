@@ -7,7 +7,7 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   host: "anarish.com",
   port: 587,
-  secure: false, // true for 465, false for other ports
+  secure: false, 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -21,7 +21,8 @@ const transporter = nodemailer.createTransport({
   // greetingTimeout: 20000, // Increase greeting timeout (in ms)
 });
 
-const sendEmail = (to,cc, subject, html) => {
+// Correcting sendEmail function to handle async behavior properly
+const sendEmail = async (to, cc, subject, html) => {
   const mailOptions = { 
     from: { name: "Anarish Innovations", address: process.env.EMAIL_USER },
     to,
@@ -29,12 +30,20 @@ const sendEmail = (to,cc, subject, html) => {
     subject,
     html,
   };
+
   console.log("email send called");
+
   try {
-    transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions); 
+    console.log("Email sent: " + info.response); 
   } catch (err) {
-    console.error("Error sending email:", err);
+    console.error("Error sending email:", err); 
   }
+};
+
+module.exports = sendEmail;
+
+
   // return transporter.sendMail(mailOptions)
   // .then(info => {
   //   console.log("Email sent: " + info.response);
@@ -43,6 +52,3 @@ const sendEmail = (to,cc, subject, html) => {
   //   console.error("Error sending email:", error);
   //   throw error;
   // });
-};
-
-module.exports = sendEmail;
