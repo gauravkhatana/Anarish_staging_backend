@@ -140,7 +140,7 @@ exports.saveUser = async (req, res) => {
     }  
     
 
-    res.status(201).json({ message: "User created successfully" });
+   
 
   } catch (error) {
     console.error("Error during user saving process:", error);
