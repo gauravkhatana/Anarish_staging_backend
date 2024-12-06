@@ -121,7 +121,6 @@ exports.saveUser = async (req, res) => {
     console.log("User saved successfully in the database");
 
     // Send a response to the client immediately after saving the user
-    res.status(201).json({ message: "User created successfully" });
 
     // Send the first email to the requester immediately
     try {
@@ -140,7 +139,8 @@ exports.saveUser = async (req, res) => {
     }  
     
 
-   
+    res.status(201).json({ message: "User created successfully" });
+
 
   } catch (error) {
     console.error("Error during user saving process:", error);
