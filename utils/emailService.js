@@ -44,7 +44,7 @@
 // module.exports = sendEmail;
 
 const nodemailer = require("nodemailer");
-// const dotenv = require("dotenv");
+const dotenv = require("dotenv");
 
 dotenv.config();
 
