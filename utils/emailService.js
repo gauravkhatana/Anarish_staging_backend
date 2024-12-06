@@ -44,7 +44,7 @@
 // module.exports = sendEmail;
 
 const nodemailer = require("nodemailer");
-const dotenv = require("dotenv");
+// const dotenv = require("dotenv");
 
 dotenv.config();
 
@@ -58,8 +58,8 @@ const transporter = nodemailer.createTransport({
   port: 587, // Default SMTP port for STARTTLS
   secure: false, // Use false for port 587 (true for 465)
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: "mail@anarish.com",
+    pass: "Anarish@123",
   },
   tls: {
     rejectUnauthorized: false, // Allows the connection even if the certificate is not verified
