@@ -80,17 +80,17 @@
 // }
 
 
+const { send } = require('@vercel/node');  // Vercel background function
 const User = require("../models/users");
 const sendEmail = require("../utils/emailService");
 const mongoose = require("mongoose");
-const { background } = require("@vercel/node");
 
 exports.saveUser = async (req, res) => {
   console.log("Saving user");
 
-  // Validate request body to ensure all required fields are present and valid
   let { name, email, phoneNumber, intrests, projectRequirements, date } = req.body;
 
+  // Basic validation
   const missingFields = [];
   if (!name) missingFields.push("name");
   if (!email) missingFields.push("email");
@@ -104,8 +104,6 @@ exports.saveUser = async (req, res) => {
   }
 
   try {
-    console.log("Initiating user saving in database:", name, email, phoneNumber, intrests, projectRequirements, date);
-
     // Create the user instance
     const user = new User({
       _id: new mongoose.Types.ObjectId(),
@@ -121,21 +119,27 @@ exports.saveUser = async (req, res) => {
     await user.save();
     console.log("User saved successfully in the database");
 
-    // Send a response to the client immediately after saving the user
+    // Send response to client immediately after saving user
     res.status(201).json({ message: "User created successfully" });
 
-    // Trigger the background function for sending emails
-    background(() => sendEmailsInBackground(email, name, phoneNumber, intrests, projectRequirements, date));
+    // Trigger background process for email sending
+    await send({
+      // Background function for sending emails
+      async run() {
+        await sendEmailsInBackground(email, name, phoneNumber, intrests, projectRequirements, date);
+      }
+    });
+
   } catch (error) {
     console.error("Error during user saving process:", error);
     res.status(500).json({ message: "Failed to submit Contact Us Form", error: error.message });
   }
 };
 
-// Background function to handle email sending
+// Function to handle background email sending
 async function sendEmailsInBackground(email, name, phoneNumber, intrests, projectRequirements, date) {
   try {
-    // Send emails concurrently
+    // Send emails concurrently in background
     await Promise.all([
       sendEmailToRequester(email, name),
       sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date),
@@ -173,8 +177,6 @@ async function sendEmailToAnarish(email, userName, userPhone, projectRequirement
   `;
   await sendEmail(anairshEmail, "", subject, emailBody);
 }
-
-
 
 
 
