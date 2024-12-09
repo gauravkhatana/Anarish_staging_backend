@@ -77,7 +77,7 @@ async function sendEmailToRequester(email, userName) {
 
 // Send email to the admin (Anarish)
 async function sendEmailToAnarish(email, userName, userPhone, projectRequirements, date) {
-  const anairshEmail = "admin@anarish.com";
+  const anairshEmail = "charu.maheshwari@anarish.com";
   const subject = "New Query from Website";
   const emailBody = `
     A user has contacted Anarish on ${date}: <br/><br/>
