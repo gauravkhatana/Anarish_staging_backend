@@ -24,9 +24,9 @@ const {
   updateUser,
   deleteUser,
   getUser,
-} = require("../../controllers/userController"); // Correct import
+} = require("../../controllers/userController"); 
 
-router.get("/", getUser); // Ensure `getUser` is imported correctly
+router.get("/", getUser); 
 router.get("/:id", getUserById);
 router.post("/submitform", saveUser);
 router.patch("/:id", updateUser);
