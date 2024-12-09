@@ -129,6 +129,9 @@ exports.saveUser = async (req, res) => {
 // Function to trigger the background task for email sending
 async function triggerBackgroundEmailTask(email, name, phoneNumber, projectRequirements, date) {
   const backgroundUrl = `${process.env.VERCEL_URL}/api/background/sendEmail`;  
+
+  console.log('Triggering background email task to URL:', backgroundUrl);
+
   const requestBody = {
     email,
     name,
