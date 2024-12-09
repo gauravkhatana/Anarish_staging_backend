@@ -151,7 +151,7 @@ async function triggerBackgroundEmailTask(email, name, phoneNumber, projectRequi
     });
 
     if (!response.ok) {
-      console.error("Error triggering background email function");
+      console.error("Error triggering background email function", response);
     }
   } catch (error) {
     console.error("Error triggering background function:", error);
