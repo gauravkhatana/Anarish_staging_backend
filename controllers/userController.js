@@ -82,7 +82,6 @@
 const User = require("../models/users");
 const sendEmail = require("../utils/emailService");
 const mongoose = require("mongoose");
-const { background } = require("@vercel/node");  // Import background function
 
 exports.saveUser = async (req, res) => {
   console.log("Saving user");
@@ -109,7 +108,7 @@ exports.saveUser = async (req, res) => {
     // Create the user instance
     const user = new User({
       _id: new mongoose.Types.ObjectId(),
-      name,  
+      name,
       email,
       phoneNumber,
       intrests,
@@ -119,48 +118,60 @@ exports.saveUser = async (req, res) => {
 
     // Save the user to the database
     await user.save();
-    console.log("User saved successfully in the database");
 
-    // Send a response to the client immediately after saving the user
+    // Send response to the client immediately (before emails are sent)
     res.status(201).json({ message: "User created successfully" });
 
-    // Trigger the background function for sending emails asynchronously
-    background(() => sendEmailsInBackground(email, name, phoneNumber, intrests, projectRequirements, date));
+    // Trigger email sending in the background (this will not block the response)
+    await sendEmailsInBackground(email, name, phoneNumber, projectRequirements, date);
 
   } catch (error) {
-    console.error("Error during user saving process:", error);
     res.status(500).json({ message: "Failed to submit Contact Us Form", error: error.message });
   }
 };
 
-// Background function to handle email sending asynchronously
-async function sendEmailsInBackground(email, name, phoneNumber, intrests, projectRequirements, date) {
+// Function to send emails concurrently in the background
+async function sendEmailsInBackground(email, name, phoneNumber, projectRequirements, date) {
   try {
-    // Send emails concurrently
+    // Send emails concurrently without blocking
     await Promise.all([
       sendEmailToRequester(email, name),
-      sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date),
+      sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date)
     ]);
-    console.log("Emails sent successfully in the background");
+    console.log("Emails sent successfully in the background.");
   } catch (error) {
     console.error("Error sending emails in background:", error);
   }
 }
 
 // Function to send email to the requester
-async function sendEmailToRequester(email, userName) {
+function sendEmailToRequester(email, userName) {
   const subject = "Welcome to Anarish Innovation - We are excited to Connect!";
-  const emailBody = `Hi ${userName}, <br/>Welcome to Our Platform! We're thrilled to have the opportunity to work with you! <br/>We have received your inquiry and one of our team members will get in touch with you soon to discuss your needs in more detail.<br/><br/>Warm Regards,<br/>Team Anarish`;
-  await sendEmail(email, "", subject, emailBody);
+  const emailBody = `
+    Hi ${userName} <br/>
+    Welcome to Our Platform! We're thrilled to have the opportunity to work with you! <br/>
+    We have received your inquiry and one of our team members will get in touch with you soon to discuss your needs in more detail.
+    <br/><br/>
+    Warm Regards,<br/> Team Anarish
+  `;
+  return sendEmail(email, "", subject, emailBody);  // Ensure the email function returns a promise
 }
 
 // Function to send email to Anarish
-async function sendEmailToAnarish(email, userName, userPhone, projectRequirements, date) {
-  const anairshEmail = "maheshwari.charu@gmail.com";
+function sendEmailToAnarish(email, userName, userPhone, projectRequirements, date) {
+  const anairshEmail = "kumartech0102@gmail.com";  
   const subject = "New Query from Website";
-  const emailBody = `Following user has tried to contact Anarish on ${date}: <br/><br/><p><b>Name:</b> ${userName}</p><p><b>Email:</b> ${email}</p><p><b>Phone Number:</b> ${userPhone}</p><p><b>Interested In:</b> ${projectRequirements}</p><p><b>Message Shared:</b> ${projectRequirements}</p>`;
-  await sendEmail(anairshEmail, "", subject, emailBody);
+  const emailBody = `
+    Following user has tried to contact Anarish on ${date}: <br/><br/>
+    <p><b>Name:</b> ${userName}</p>
+    <p><b>Email:</b> ${email}</p>
+    <p><b>Phone Number:</b> ${userPhone}</p>
+    <p><b>Interested In:</b> ${projectRequirements}</p>
+    <p><b>Message Shared:</b> ${projectRequirements}</p>
+  `;
+  return sendEmail(anairshEmail, "", subject, emailBody);  // Ensure the email function returns a promise
 }
+
 
 
 // const User = require("../models/users");
