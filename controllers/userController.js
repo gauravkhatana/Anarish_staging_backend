@@ -79,9 +79,11 @@
 //   sendEmail(anairshEmail, "", subject, emailBody);  
 // }
 
+
 const User = require("../models/users");
 const sendEmail = require("../utils/emailService");
 const mongoose = require("mongoose");
+const { background } = require("@vercel/node");
 
 exports.saveUser = async (req, res) => {
   console.log("Saving user");
@@ -89,7 +91,6 @@ exports.saveUser = async (req, res) => {
   // Validate request body to ensure all required fields are present and valid
   let { name, email, phoneNumber, intrests, projectRequirements, date } = req.body;
 
-  // Basic validation
   const missingFields = [];
   if (!name) missingFields.push("name");
   if (!email) missingFields.push("email");
@@ -108,7 +109,7 @@ exports.saveUser = async (req, res) => {
     // Create the user instance
     const user = new User({
       _id: new mongoose.Types.ObjectId(),
-      name,  
+      name,
       email,
       phoneNumber,
       intrests,
@@ -121,32 +122,29 @@ exports.saveUser = async (req, res) => {
     console.log("User saved successfully in the database");
 
     // Send a response to the client immediately after saving the user
-
-    // Send the first email to the requester immediately
-    try {
-      await sendEmailToRequester(email, name);
-      console.log(`Email sent to requester: ${email}`);
-    } catch (error) {
-      console.error("Error sending email to requester:", error);
-    }
-
-    // Send the second email to anarish
-    try {
-      await sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date);
-      console.log(`Email sent to Anarish: maheshwari.charu@gmail.com`);
-    } catch (error) {
-      console.error("Error sending email to Anarish:", error);
-    }  
-    
-
     res.status(201).json({ message: "User created successfully" });
 
-
+    // Trigger the background function for sending emails
+    background(() => sendEmailsInBackground(email, name, phoneNumber, intrests, projectRequirements, date));
   } catch (error) {
     console.error("Error during user saving process:", error);
     res.status(500).json({ message: "Failed to submit Contact Us Form", error: error.message });
   }
 };
+
+// Background function to handle email sending
+async function sendEmailsInBackground(email, name, phoneNumber, intrests, projectRequirements, date) {
+  try {
+    // Send emails concurrently
+    await Promise.all([
+      sendEmailToRequester(email, name),
+      sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date),
+    ]);
+    console.log("Emails sent successfully in the background");
+  } catch (error) {
+    console.error("Error sending emails in background:", error);
+  }
+}
 
 // Function to send email to the requester
 async function sendEmailToRequester(email, userName) {
@@ -158,12 +156,12 @@ async function sendEmailToRequester(email, userName) {
     <br/><br/>
     Warm Regards,<br/> Team Anarish
   `;
-  await sendEmail(email, "", subject, emailBody);  
+  await sendEmail(email, "", subject, emailBody);
 }
 
 // Function to send email to Anarish
 async function sendEmailToAnarish(email, userName, userPhone, projectRequirements, date) {
-  const anairshEmail = "maheshwari.charu@gmail.com";  
+  const anairshEmail = "maheshwari.charu@gmail.com";
   const subject = "New Query from Website";
   const emailBody = `
     Following user has tried to contact Anarish on ${date}: <br/><br/>
@@ -173,8 +171,114 @@ async function sendEmailToAnarish(email, userName, userPhone, projectRequirement
     <p><b>Interested In:</b> ${projectRequirements}</p>
     <p><b>Message Shared:</b> ${projectRequirements}</p>
   `;
-  await sendEmail(anairshEmail, "", subject, emailBody);  
+  await sendEmail(anairshEmail, "", subject, emailBody);
 }
+
+
+
+
+
+
+
+
+
+
+// const User = require("../models/users");
+// const sendEmail = require("../utils/emailService");
+// const mongoose = require("mongoose");
+
+// exports.saveUser = async (req, res) => {
+//   console.log("Saving user");
+
+//   // Validate request body to ensure all required fields are present and valid
+//   let { name, email, phoneNumber, intrests, projectRequirements, date } = req.body;
+
+//   // Basic validation
+//   const missingFields = [];
+//   if (!name) missingFields.push("name");
+//   if (!email) missingFields.push("email");
+//   if (!phoneNumber) missingFields.push("phoneNumber");
+//   if (!intrests) missingFields.push("intrests");
+//   if (!projectRequirements) missingFields.push("projectRequirements");
+//   if (!date) missingFields.push("date");
+
+//   if (missingFields.length) {
+//     return res.status(400).json({ error: `Missing fields: ${missingFields.join(", ")}` });
+//   }
+
+//   try {
+//     console.log("Initiating user saving in database:", name, email, phoneNumber, intrests, projectRequirements, date);
+
+//     // Create the user instance
+//     const user = new User({
+//       _id: new mongoose.Types.ObjectId(),
+//       name,  
+//       email,
+//       phoneNumber,
+//       intrests,
+//       projectRequirements,
+//       date,
+//     });
+
+//     // Save the user to the database
+//     await user.save();
+//     console.log("User saved successfully in the database");
+
+//     // Send a response to the client immediately after saving the user
+//     res.status(201).json({ message: "User created successfully" });
+
+//     // Send the first email to the requester immediately
+//     try {
+//       await sendEmailToRequester(email, name);
+//       console.log(`Email sent to requester: ${email}`);
+//     } catch (error) {
+//       console.error("Error sending email to requester:", error);
+//     }
+
+//     // Send the second email to anarish
+//     try {
+//       await sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date);
+//       console.log(`Email sent to Anarish: maheshwari.charu@gmail.com`);
+//     } catch (error) {
+//       console.error("Error sending email to Anarish:", error);
+//     }  
+    
+
+
+
+//   } catch (error) {
+//     console.error("Error during user saving process:", error);
+//     res.status(500).json({ message: "Failed to submit Contact Us Form", error: error.message });
+//   }
+// };
+
+// // Function to send email to the requester
+// async function sendEmailToRequester(email, userName) {
+//   const subject = "Welcome to Anarish Innovation - We are excited to Connect!";
+//   const emailBody = `
+//     Hi ${userName} <br/>
+//     Welcome to Our Platform! We're thrilled to have the opportunity to work with you! <br/>
+//     We have received your inquiry and one of our team members will get in touch with you soon to discuss your needs in more detail.
+//     <br/><br/>
+//     Warm Regards,<br/> Team Anarish
+//   `;
+//   await sendEmail(email, "", subject, emailBody);  
+// }
+
+// // Function to send email to Anarish
+// async function sendEmailToAnarish(email, userName, userPhone, projectRequirements, date) {
+//   const anairshEmail = "maheshwari.charu@gmail.com";  
+//   const subject = "New Query from Website";
+//   const emailBody = `
+//     Following user has tried to contact Anarish on ${date}: <br/><br/>
+//     <p><b>Name:</b> ${userName}</p>
+//     <p><b>Email:</b> ${email}</p>
+//     <p><b>Phone Number:</b> ${userPhone}</p>
+//     <p><b>Interested In:</b> ${projectRequirements}</p>
+//     <p><b>Message Shared:</b> ${projectRequirements}</p>
+//   `;
+//   await sendEmail(anairshEmail, "", subject, emailBody);  
+// }
 
 
 
