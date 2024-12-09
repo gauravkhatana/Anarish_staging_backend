@@ -79,17 +79,14 @@
 //   sendEmail(anairshEmail, "", subject, emailBody);  
 // }
 
-const User = require("../models/users");
-const sendEmail = require("../utils/emailService");
-const mongoose = require("mongoose");
+import User from "../models/users";
+import mongoose from "mongoose";
+import fetch from "node-fetch"; // Import fetch for Node.js
 
-exports.saveUser = async (req, res) => {
-  console.log("Saving user");
-
-  // Validate request body to ensure all required fields are present and valid
+export default async function handler(req, res) {
   let { name, email, phoneNumber, intrests, projectRequirements, date } = req.body;
 
-  // Basic validation
+  // Basic validation for missing fields
   const missingFields = [];
   if (!name) missingFields.push("name");
   if (!email) missingFields.push("email");
@@ -103,9 +100,7 @@ exports.saveUser = async (req, res) => {
   }
 
   try {
-    console.log("Initiating user saving in database:", name, email, phoneNumber, intrests, projectRequirements, date);
-
-    // Create the user instance
+    // Save the user data to MongoDB
     const user = new User({
       _id: new mongoose.Types.ObjectId(),
       name,
@@ -116,60 +111,46 @@ exports.saveUser = async (req, res) => {
       date,
     });
 
-    // Save the user to the database
     await user.save();
+    console.log("User saved successfully");
 
-    // Send response to the client immediately (before emails are sent)
+    // Send response immediately to the client
     res.status(201).json({ message: "User created successfully" });
 
-    // Trigger email sending in the background (this will not block the response)
-    await sendEmailsInBackground(email, name, phoneNumber, projectRequirements, date);
+    // Trigger the background function to send emails
+    await sendBackgroundEmailTask(email, name, phoneNumber, projectRequirements, date);
 
   } catch (error) {
     res.status(500).json({ message: "Failed to submit Contact Us Form", error: error.message });
   }
-};
+}
 
-// Function to send emails concurrently in the background
-async function sendEmailsInBackground(email, name, phoneNumber, projectRequirements, date) {
+// Function to trigger the background task for email sending
+async function sendBackgroundEmailTask(email, name, phoneNumber, projectRequirements, date) {
+  const backgroundUrl = `${process.env.VERCEL_URL}/api/sendEmail`;
+
+  const requestBody = {
+    email,
+    name,
+    phoneNumber,
+    projectRequirements,
+    date
+  };
+
   try {
-    // Send emails concurrently without blocking
-    await Promise.all([
-      sendEmailToRequester(email, name),
-      sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date)
-    ]);
-    console.log("Emails sent successfully in the background.");
+    // Trigger the background email function using an HTTP POST request
+    const response = await fetch(backgroundUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      console.error("Error triggering background email function");
+    }
   } catch (error) {
-    console.error("Error sending emails in background:", error);
+    console.error("Error triggering background function:", error);
   }
-}
-
-// Function to send email to the requester
-function sendEmailToRequester(email, userName) {
-  const subject = "Welcome to Anarish Innovation - We are excited to Connect!";
-  const emailBody = `
-    Hi ${userName} <br/>
-    Welcome to Our Platform! We're thrilled to have the opportunity to work with you! <br/>
-    We have received your inquiry and one of our team members will get in touch with you soon to discuss your needs in more detail.
-    <br/><br/>
-    Warm Regards,<br/> Team Anarish
-  `;
-  return sendEmail(email, "", subject, emailBody);  // Ensure the email function returns a promise
-}
-
-// Function to send email to Anarish
-function sendEmailToAnarish(email, userName, userPhone, projectRequirements, date) {
-  const anairshEmail = "kumartech0102@gmail.com";  
-  const subject = "New Query from Website";
-  const emailBody = `
-    Following user has tried to contact Anarish on ${date}: <br/><br/>
-    <p><b>Name:</b> ${userName}</p>
-    <p><b>Email:</b> ${email}</p>
-    <p><b>Phone Number:</b> ${userPhone}</p>
-    <p><b>Interested In:</b> ${projectRequirements}</p>
-    <p><b>Message Shared:</b> ${projectRequirements}</p>
-  `;
-  return sendEmail(anairshEmail, "", subject, emailBody);  // Ensure the email function returns a promise
 }
 
 
