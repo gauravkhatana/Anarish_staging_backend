@@ -78,14 +78,14 @@
 //   `;
 //   sendEmail(anairshEmail, "", subject, emailBody);  
 // }
+const User = require("../models/users");
+const mongoose = require("mongoose");
+const fetch = require("node-fetch");
 
-import User from "../models/users";
-import mongoose from "mongoose";
-import fetch from "node-fetch"; // Import fetch for Node.js
-
-export default async function handler(req, res) {
-  let { name, email, phoneNumber, intrests, projectRequirements, date } = req.body;
-
+// Export the function directly for use in your routes
+exports.saveUser = async (req, res) => {
+  const { name, email, phoneNumber, intrests, projectRequirements, date } = req.body;
+  
   // Basic validation for missing fields
   const missingFields = [];
   if (!name) missingFields.push("name");
@@ -118,23 +118,23 @@ export default async function handler(req, res) {
     res.status(201).json({ message: "User created successfully" });
 
     // Trigger the background function to send emails
-    await sendBackgroundEmailTask(email, name, phoneNumber, projectRequirements, date);
+    await triggerBackgroundEmailTask(email, name, phoneNumber, projectRequirements, date);
 
   } catch (error) {
+    console.error("Error saving user:", error);
     res.status(500).json({ message: "Failed to submit Contact Us Form", error: error.message });
   }
 }
 
 // Function to trigger the background task for email sending
-async function sendBackgroundEmailTask(email, name, phoneNumber, projectRequirements, date) {
-  const backgroundUrl = `${process.env.VERCEL_URL}/api/sendEmail`;
-
+async function triggerBackgroundEmailTask(email, name, phoneNumber, projectRequirements, date) {
+  const backgroundUrl = `${process.env.VERCEL_URL}/api/background/sendEmail`;  
   const requestBody = {
     email,
     name,
     phoneNumber,
     projectRequirements,
-    date
+    date,
   };
 
   try {
@@ -142,7 +142,7 @@ async function sendBackgroundEmailTask(email, name, phoneNumber, projectRequirem
     const response = await fetch(backgroundUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -152,7 +152,6 @@ async function sendBackgroundEmailTask(email, name, phoneNumber, projectRequirem
     console.error("Error triggering background function:", error);
   }
 }
-
 
 
 // const User = require("../models/users");
@@ -255,18 +254,80 @@ async function sendBackgroundEmailTask(email, name, phoneNumber, projectRequirem
 
 
 
+// exports.getUser = async (req, resp) => {
+//   User.find()
+//     .then((result) => {
+//       console.log(result);
+//       resp.status(200).json({
+//         message: "User fetched successfully",
+//         users: result,
+//       });
+//     })
+//     .catch((err) => resp.status(500).json({ error: err.message }));
+// };
+
+// exports.getUserById = async (req, resp) => {
+//   const { id } = req.params;
+
+//   try {
+//     const user = await User.findById(id);
+//     if (!user) {
+//       return resp.status(404).json({ message: "User not found" });
+//     }
+//     resp.status(200).json({
+//       message: `User with id : ${id} fetched successfully`,
+//       user,
+//     });
+//   } catch (error) {
+//     resp.status(500).json({ error: "Failed to retrieve user" });
+//   }
+// };
+
+// exports.updateUser = async (req, resp) => {
+//   const id = req.params.id;
+//   User.findById(id)
+//     .then((result) => {
+//       if (result != null) {
+//         User.update({ _id: id }, { $set: req.body });
+//       } else {
+//         resp.status(500).json({
+//           message: `No user present with this id`,
+//         });
+//       }
+//     })
+//     .catch((err) => resp.status(500).json({ error: err.message }));
+// };
+
+// exports.deleteUser = async (req, resp) => {
+//   const id = req.params.id;
+//   User.findById(id)
+//     .then((result) => {
+//       if (result != null) {
+//         User.remove({ _id: id });
+//       } else {
+//         resp.status(500).json({
+//           message: `No user present with this id`,
+//         });
+//       }
+//     })
+//     .catch((err) => resp.status(500).json({ error: err.message }));
+// };
+
+
+
 exports.getUser = async (req, resp) => {
-  User.find()
-    .then((result) => {
-      console.log(result);
-      resp.status(200).json({
-        message: "User fetched successfully",
-        users: result,
-      });
-    })
-    .catch((err) => resp.status(500).json({ error: err.message }));
+  try {
+    const users = await User.find();
+    resp.status(200).json({
+      message: "Users fetched successfully",
+      users,
+    });
+  } catch (err) {
+    resp.status(500).json({ error: err.message });
+  }
 };
 
+// Get user by ID
 exports.getUserById = async (req, resp) => {
   const { id } = req.params;
 
@@ -276,7 +337,7 @@ exports.getUserById = async (req, resp) => {
       return resp.status(404).json({ message: "User not found" });
     }
     resp.status(200).json({
-      message: `User with id : ${id} fetched successfully`,
+      message: `User with ID: ${id} fetched successfully`,
       user,
     });
   } catch (error) {
@@ -284,32 +345,41 @@ exports.getUserById = async (req, resp) => {
   }
 };
 
+// Update user
 exports.updateUser = async (req, resp) => {
-  const id = req.params.id;
-  User.findById(id)
-    .then((result) => {
-      if (result != null) {
-        User.update({ _id: id }, { $set: req.body });
-      } else {
-        resp.status(500).json({
-          message: `No user present with this id`,
-        });
-      }
-    })
-    .catch((err) => resp.status(500).json({ error: err.message }));
+  const { id } = req.params;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
+    if (!updatedUser) {
+      return resp.status(404).json({
+        message: `No user present with this ID: ${id}`,
+      });
+    }
+    resp.status(200).json({
+      message: `User with ID: ${id} updated successfully`,
+      updatedUser,
+    });
+  } catch (err) {
+    resp.status(500).json({ error: err.message });
+  }
 };
 
+// Delete user
 exports.deleteUser = async (req, resp) => {
-  const id = req.params.id;
-  User.findById(id)
-    .then((result) => {
-      if (result != null) {
-        User.remove({ _id: id });
-      } else {
-        resp.status(500).json({
-          message: `No user present with this id`,
-        });
-      }
-    })
-    .catch((err) => resp.status(500).json({ error: err.message }));
+  const { id } = req.params;
+
+  try {
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) {
+      return resp.status(404).json({
+        message: `No user present with this ID: ${id}`,
+      });
+    }
+    resp.status(200).json({
+      message: `User with ID: ${id} deleted successfully`,
+    });
+  } catch (err) {
+    resp.status(500).json({ error: err.message });
+  }
 };

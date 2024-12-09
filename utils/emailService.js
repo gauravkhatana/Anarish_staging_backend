@@ -46,26 +46,23 @@
 
 // module.exports = sendEmail;
 
-
-const nodemailer = require("nodemailer");  // Assuming you're using Nodemailer for email sending
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,  // Your email user
-    pass: process.env.EMAIL_PASS   // Your email password or App password
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS  
   }
 });
 
-// Function to send email to the user (requester)
+// Send email to the user
 async function sendEmailToRequester(email, userName) {
-  const subject = "Welcome to Anarish Innovation - We are excited to Connect!";
+  const subject = "Welcome to Anarish Innovation!";
   const emailBody = `
     Hi ${userName}, <br/>
-    Welcome to Our Platform! We're thrilled to have the opportunity to work with you! <br/>
-    We have received your inquiry and one of our team members will get in touch with you soon to discuss your needs in more detail.
-    <br/><br/>
-    Warm Regards,<br/> Team Anarish
+    Welcome to Our Platform! We have received your inquiry, and one of our team members will get in touch with you shortly.
+    <br/><br/>Warm regards,<br/>Team Anarish
   `;
   
   const mailOptions = {
@@ -78,17 +75,16 @@ async function sendEmailToRequester(email, userName) {
   await transporter.sendMail(mailOptions);
 }
 
-// Function to send email to Anarish (admin)
+// Send email to the admin (Anarish)
 async function sendEmailToAnarish(email, userName, userPhone, projectRequirements, date) {
-  const anairshEmail = "ishanksharma2372003@gmail.com";  // Replace with your admin email
+  const anairshEmail = "admin@anarish.com";
   const subject = "New Query from Website";
   const emailBody = `
-    Following user has tried to contact Anarish on ${date}: <br/><br/>
-    <p><b>Name:</b> ${userName}</p>
-    <p><b>Email:</b> ${email}</p>
-    <p><b>Phone Number:</b> ${userPhone}</p>
-    <p><b>Interested In:</b> ${projectRequirements}</p>
-    <p><b>Message Shared:</b> ${projectRequirements}</p>
+    A user has contacted Anarish on ${date}: <br/><br/>
+    <b>Name:</b> ${userName} <br/>
+    <b>Email:</b> ${email} <br/>
+    <b>Phone Number:</b> ${userPhone} <br/>
+    <b>Interested In:</b> ${projectRequirements} <br/>
   `;
   
   const mailOptions = {
@@ -101,8 +97,7 @@ async function sendEmailToAnarish(email, userName, userPhone, projectRequirement
   await transporter.sendMail(mailOptions);
 }
 
-module.exports = { sendEmailToRequester, sendEmailToAnarish }
-
+module.exports = { sendEmailToRequester, sendEmailToAnarish };
 
 // const nodemailer = require("nodemailer");
 // const dotenv = require("dotenv");

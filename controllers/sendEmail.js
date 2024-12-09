@@ -1,19 +1,19 @@
-import { sendEmailToRequester, sendEmailToAnarish } from "../utils/emailService"; // Assuming these functions are defined in your utils
+import { sendEmailToRequester, sendEmailToAnarish } from "../utils/emailService";
 
-// This is the background function
+// This is the background function that will be triggered asynchronously
 export const background = true;  // Enable background mode for Vercel
 
 export default async function handler(req, res) {
   const { email, name, phoneNumber, projectRequirements, date } = req.body;
 
   try {
-    // Call both email functions concurrently
+    // Send both emails concurrently using Promise.all
     await Promise.all([
       sendEmailToRequester(email, name),
       sendEmailToAnarish(email, name, phoneNumber, projectRequirements, date)
     ]);
 
-    // Responding to Vercel after the emails are sent
+    // Respond to Vercel (this won't delay the main function)
     res.status(200).json({ message: "Emails sent successfully in the background" });
   } catch (error) {
     console.error("Error sending emails:", error);
