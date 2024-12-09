@@ -4,6 +4,7 @@ import { sendEmailToRequester, sendEmailToAnarish } from "../utils/emailService"
 export const background = true;  // Enable background mode for Vercel
 
 export default async function handler(req, res) {
+    console.log('I have been called');
   const { email, name, phoneNumber, projectRequirements, date } = req.body;
 
   try {
