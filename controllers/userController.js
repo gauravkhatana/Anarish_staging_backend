@@ -127,12 +127,12 @@ let isConnected = false;
 
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
-          host: "anarish.com",
-          port: 465,       
-          secure: true,           
-          secureProtocol: 'TLSv1_3_method',  
+          host: "smtp.anarish.com",
+          port: 587,       
+          secure: false,           
+        //   secureProtocol: 'TLSv1_3_method',  
           auth: {
-            user: process.env.EMAIL_USER, // Your email
+            user: process.env.EMAIL_USER, 
             pass: process.env.EMAIL_PASS 
           },
           tls: {
