@@ -125,31 +125,23 @@ const User = require("../models/users");
 // MongoDB connection
 let isConnected = false;
 
-// Ensure MongoDB is connected
-const connectToDatabase = async () => {
-  if (isConnected) return;
-  await mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  isConnected = true;
-};
-
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
-  host: "anarish.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER, // Your email
-    pass: process.env.EMAIL_PASS, // Your email password
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-  pool: true, // Enable connection pooling
-  maxConnections: 5,
-});
+          host: "anarish.com",
+          port: 465,
+          secure: true, 
+          auth: {
+            user: process.env.EMAIL_USER, // Your email
+            pass: process.env.EMAIL_PASS 
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+          pool: true, // Use connection pooling for better performance
+          maxConnections: 5, // Maximum number of concurrent connections
+          // connectionTimeout: 10000, // Increase timeout (in ms)
+          // greetingTimeout: 20000, // Increase greeting timeout (in ms)
+        });
 
 // Main handler to save user and send emails
 exports.saveUser = async function (req, res) {
@@ -160,8 +152,6 @@ exports.saveUser = async function (req, res) {
   const { name, email, phoneNumber, intrests, projectRequirements, date } = req.body;
 
   try {
-    // Connect to the database
-    await connectToDatabase();
 
     // Save user to MongoDB
     const user = new User({
