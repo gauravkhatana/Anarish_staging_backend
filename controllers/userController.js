@@ -127,7 +127,7 @@ let isConnected = false;
 
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
-          host: "smtp.anarish.com",
+          host: "mail.anarish.com",
           port: 587,       
           secure: false,           
         //   secureProtocol: 'TLSv1_3_method',  
