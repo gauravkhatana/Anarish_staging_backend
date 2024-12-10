@@ -201,12 +201,21 @@ const sendEmails = async ({ name, email, phoneNumber, projectRequirements }) => 
 
   try {
     await Promise.all([
-      sendMail(userMailOptions, 'User'), // Send email to the user
-      sendMail(agencyMailOptions, 'Agency'), // Send email to the agency
+      sendMail(userMailOptions, 'User'),
+      sendMail(agencyMailOptions, 'Agency')
     ]);
     console.log('Both emails sent successfully.');
   } catch (error) {
-    console.error('Error occurred while sending emails:', error.message);
+    console.error('Error occurred while sending emails:', error);
+    if (error.code === 'ECONNREFUSED') {
+      console.error('Connection refused, check server or firewall.');
+    } else if (error.code === '421') {
+      console.error('Too many connections, try again later.');
+    } else if (error.message.includes('SMTP AUTH')) {
+      console.error('SMTP Authentication error.');
+    } else {
+      console.error('General error:', error.message);
+    }
   }
 };
 
