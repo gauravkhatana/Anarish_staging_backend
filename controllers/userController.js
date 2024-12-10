@@ -72,7 +72,7 @@ exports.saveUser =  async function (req, res) {
     await user.save();
 
     // Send emails in the background
-    sendEmails({ name, email, phoneNumber, projectRequirements });
+    await sendEmails({ name, email, phoneNumber, projectRequirements });
 
     return res.status(200).json({
       status: 'success',
