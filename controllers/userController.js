@@ -129,7 +129,7 @@ let isConnected = false;
 const transporter = nodemailer.createTransport({
           host: "anarish.com",
           port: 465,
-          secure: true, 
+          secure: 'TLSv1_2_method', 
           auth: {
             user: process.env.EMAIL_USER, // Your email
             pass: process.env.EMAIL_PASS 
